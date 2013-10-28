@@ -488,11 +488,41 @@ class LeftAndMain extends Controller {
   }
 
 	public function Left() {
-		return $this->renderWith($this->getTemplatesWithSuffix('_left'));
+		return $this->getLeftAndMainTemplate('Left');
 	}
 
 	public function Right() {
-		return $this->renderWith($this->getTemplatesWithSuffix('_right'));
+		return $this->getLeftAndMainTemplate('Right');
+	}
+
+	/**
+	 * Get the body of a template.
+	 * Checks all extensions before defaulting to {ClassName}_{Type}.
+	 * Type should be supplied capitalised like "Left"
+	 *
+	 * @param string $type
+	 */
+	public function getLeftAndMainTemplate($type) {
+		$rv = null;
+
+		// Allow decorators to override the template
+		if ($templates = $this->extend("update$type", $rv)) {
+			// Extend returns an array.
+			// updateLeft returns a string so we don't really have
+			// a chioce but to simply take the first populated result.
+			foreach ($templates as $template) {
+				if ($template) {
+					$rv = $template;
+					break;
+				}
+			}
+		}
+
+		if (!$rv) {
+			$rv = $this->renderWith($this->getTemplatesWithSuffix('_' . strtolower($type)));
+		}
+
+		return $rv;
 	}
 
 	public function getRecord($id, $className = null) {
